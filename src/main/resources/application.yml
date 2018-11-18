@@ -1,0 +1,30 @@
+# Allow Thymeleaf templates to be reloaded at dev time
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create
+#PROD
+#  datasource:
+#    url: jdbc:mysql://localhost:3306/messagedb
+#    username: root
+#    password: admin
+#    driver-class-name: com.mysql.jdbc.Driver
+#  thymeleaf.cache: false
+#Embedded
+  datasource:
+    url: jdbc:h2:file:~/test
+    username: sa
+    password: sa
+    driver-class-name: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+server:
+  tomcat:
+    access_log_enabled: true
+    basedir: target/tomcat
+
+logging.level:
+  org.hibernate.SQL: DEBUG
