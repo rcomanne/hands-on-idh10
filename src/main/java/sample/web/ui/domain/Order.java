@@ -9,10 +9,13 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import lombok.Getter;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Entity
 @Table(name = "Orders")
+@Slf4j
 public class Order extends BaseOrder {
     @OneToMany(cascade = CascadeType.ALL)
     private List<Product> products;
@@ -30,6 +33,7 @@ public class Order extends BaseOrder {
         int price = 0;
         for (Product product : this.products) {
             price += product.getPrice();
+            log.info("Product: {}", product);
         }
         return price;
     }

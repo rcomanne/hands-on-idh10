@@ -27,5 +27,5 @@ server:
     basedir: target/tomcat
 
 logging.level:
-  org.hibernate.SQL: DEBUG
+#  org.hibernate.SQL: DEBUG
   sample.web.ui: DEBUG
