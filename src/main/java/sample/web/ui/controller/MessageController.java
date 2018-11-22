@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import javax.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,6 +60,7 @@ public class MessageController {
 	private final OrderOptionRepository orderOptionRepository;
 	private final ProductCatalogRepository productCatalogRepository;
 
+	@Autowired
 	public MessageController(final MessageRepository messageRepository, final OrderRepository orderRepository,
 							 final ProductCatalogRepository productCatalogRepository, final OrderOptionRepository orderOptionRepository) {
 		this.messageRepository = messageRepository;
@@ -80,16 +82,20 @@ public class MessageController {
 	}
 
 	private void decorateOrder() {
-		Optional<Order> concreteOrder  = orderRepository.findById(4L);
-		OrderOption decoratedOrder1 = new OrderOption("wrapping paper", 7, concreteOrder.get());
-		orderOptionRepository.save(decoratedOrder1);
-		OrderOption decoratedOrder2 = new OrderOption("nice box", 5, decoratedOrder1);
-		orderOptionRepository.save(decoratedOrder2);
-		OrderOption decoratedOrder3 = new OrderOption("fast delivery", 12, decoratedOrder2);
-		orderOptionRepository.save(decoratedOrder3);
-		log.info("Content of the order: {}", decoratedOrder3);
-		log.info("Price of the order: {}", decoratedOrder3.price());
-	}
+        Optional<Order> concreteOrder  = orderRepository.findById(4L);
+        if (concreteOrder.isPresent()) {
+            OrderOption decoratedOrder1 = new OrderOption("wrapping paper", 7, concreteOrder.get());
+            orderOptionRepository.save(decoratedOrder1);
+            OrderOption decoratedOrder2 = new OrderOption("nice box", 5, decoratedOrder1);
+            orderOptionRepository.save(decoratedOrder2);
+            OrderOption decoratedOrder3 = new OrderOption("fast delivery", 12, decoratedOrder2);
+            orderOptionRepository.save(decoratedOrder3);
+            log.info("Content of the order: {}", decoratedOrder3);
+            log.info("Price of the order: {}", decoratedOrder3.price());
+        } else {
+            throw new RuntimeException("Order with id 4 not found.");
+        }
+    }
 
 	private Order createOrder() {
         ProductCatalog productCatalog = productCatalogRepository.findById(1L).orElseThrow(() -> new RuntimeException("ProductCatalog with id 1 not found"));
