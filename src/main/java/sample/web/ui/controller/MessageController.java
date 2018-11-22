@@ -16,7 +16,14 @@
 
 package sample.web.ui.controller;
 
-import org.springframework.http.HttpStatus;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
+
+import java.util.List;
+import java.util.Optional;
+
+import javax.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,18 +36,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
-
-import javax.validation.Valid;
-
+import lombok.extern.slf4j.Slf4j;
 import sample.web.ui.domain.Message;
 import sample.web.ui.domain.Order;
+import sample.web.ui.domain.OrderOption;
 import sample.web.ui.domain.Product;
 import sample.web.ui.domain.ProductCatalog;
 import sample.web.ui.repository.MessageRepository;
+import sample.web.ui.repository.OrderOptionRepository;
 import sample.web.ui.repository.OrderRepository;
 import sample.web.ui.repository.ProductCatalogRepository;
 
+@Slf4j
 @Controller
 @RequestMapping("/")
 public class MessageController {
@@ -49,53 +56,77 @@ public class MessageController {
 	private static final String LIST_TEMPLATE = "messages/list";
 	private final MessageRepository messageRepository;
 	private final OrderRepository orderRepository;
+	private final OrderOptionRepository orderOptionRepository;
 	private final ProductCatalogRepository productCatalogRepository;
 
 	public MessageController(final MessageRepository messageRepository, final OrderRepository orderRepository,
-							 final ProductCatalogRepository productCatalogRepository) {
+							 final ProductCatalogRepository productCatalogRepository, final OrderOptionRepository orderOptionRepository) {
 		this.messageRepository = messageRepository;
 		this.orderRepository = orderRepository;
+		this.orderOptionRepository = orderOptionRepository;
 		this.productCatalogRepository = productCatalogRepository;
 	}
 
-	private void createProductCatalogAndProductsAndOrder() {
+	private ProductCatalog createProductCatalogAndProductsAndOrder() {
 		ProductCatalog productCatalog = new ProductCatalog();
 		productCatalog = productCatalogRepository.save(productCatalog);
 
-		Product schroefje = new Product("schroefje", 2.0);
-		Product moertje = new Product("moertje", 1.0);
+		Product schroefje = new Product("schroefje", 2);
+		Product moertje = new Product("moertje", 1);
 
 		productCatalog.add(schroefje);
 		productCatalog.add(moertje);
-		productCatalogRepository.save(productCatalog);
+		return productCatalogRepository.save(productCatalog);
 	}
+
+	private void decorateOrder() {
+		Optional<Order> concreteOrder  = orderRepository.findById(4L);
+		OrderOption decoratedOrder1 = new OrderOption("wrapping paper", 7, concreteOrder.get());
+		orderOptionRepository.save(decoratedOrder1);
+		OrderOption decoratedOrder2 = new OrderOption("nice box", 5, decoratedOrder1);
+		orderOptionRepository.save(decoratedOrder2);
+		OrderOption decoratedOrder3 = new OrderOption("fast delivery", 12, decoratedOrder2);
+		orderOptionRepository.save(decoratedOrder3);
+		log.info("Content of the order: {}", decoratedOrder3);
+		log.info("Price of the order: {}", decoratedOrder3.price());
+	}
+
+	private Order createOrder() {
+        ProductCatalog productCatalog = productCatalogRepository.findById(1L).orElseThrow(() -> new RuntimeException("ProductCatalog with id 1 not found"));
+
+        Product product = productCatalog.find(2L).orElseThrow(() -> new RuntimeException("Product with id 2 not found"));
+
+        Product copy = new Product(product);
+
+        Order order = new Order();
+        order = orderRepository.save(order);
+        order.add(copy);
+
+        return order;
+    }
 
 	@Transactional
 	@GetMapping(path = "/create-order")
-	public ResponseEntity<Order> createOrder() {
-		ProductCatalog productCatalog = productCatalogRepository.findById(1L).orElseThrow(() -> new RuntimeException("ProductCatalog with id 1 not found"));
+	public ResponseEntity<Order> createAndDecorateOrder() {
+        Order order = createOrder();
+        decorateOrder();
 
-		Product product = productCatalog.find(2L).orElseThrow(() -> new RuntimeException("Product with id 2 not found"));
-
-		Product copy = new Product(product);
-
-		Order order = new Order();
-		order = orderRepository.save(order);
-		order.add(copy);
-
-		return new ResponseEntity<>(order, HttpStatus.CREATED);
+		return new ResponseEntity<>(order, CREATED);
 	}
 
 	@GetMapping(path = "/orders")
     public ResponseEntity<List<Order>> getOrders() {
-	    return new ResponseEntity<>(orderRepository.findAll(), HttpStatus.OK);
+	    return new ResponseEntity<>(orderRepository.findAll(), OK);
+    }
+
+    @GetMapping("/create-catalog")
+    public ResponseEntity<ProductCatalog> createProductCatalog() {
+        return new ResponseEntity<>(createProductCatalogAndProductsAndOrder(), OK);
     }
 
 	@GetMapping
 	@Transactional
 	public ModelAndView list() {
-		createProductCatalogAndProductsAndOrder();
-
 		Iterable<Message> messages = this.messageRepository.findAll();
 		return new ModelAndView(LIST_TEMPLATE, "messages", messages);
 	}

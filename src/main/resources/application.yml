@@ -28,3 +28,4 @@ server:
 
 logging.level:
   org.hibernate.SQL: DEBUG
+  sample.web.ui: DEBUG
