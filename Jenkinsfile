@@ -1,18 +1,23 @@
 pipeline {
 	agent none
 
+	tools {
+		maven 'Maven 3.5.0'
+		jdk 'jdk8'
+	}
+
 	stages {
 		stage('Build artifact') {
 			steps {
 				echo 'Building artifact.'
-				mvn clean install -T 1.5C -DskipTests
+				sh 'mvn clean install -T 1.5C -DskipTests'
 			}
 		}
 
 		stage('Testing') {
 			steps {
 				echo 'Testing artifact.'
-				mvn verify
+				sh 'mvn verify'
 			}
 		}
 
