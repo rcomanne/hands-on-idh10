@@ -1,13 +1,13 @@
 package sample.web.ui.crosscutting;
 
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
-import javax.management.ObjectName;
-
+@Slf4j
 @Aspect
 @Component
 public class MyExecutionAspect {
@@ -20,15 +20,10 @@ public class MyExecutionAspect {
     @Around("myExecutionTimeAnnotation()")
     public Object myExectuinTimeAdvice(ProceedingJoinPoint point) throws Throwable {
         long start = System.currentTimeMillis();
-        System.out.println("(AOP_myExecTime) Starting timing method " + point.getSignature());
+        log.debug("Starting timing method: {}", point.getSignature());
         Object returnValue = point.proceed();
         long duration = System.currentTimeMillis() - start;
-        System.out.println("(AOP_myExecTime) Call to "
-            + point.getSignature()
-            + " took "
-            + duration
-            + " ms"
-        );
+        log.debug("Call to {} took {} ms", point.getSignature(), duration);
 
         return returnValue;
     }

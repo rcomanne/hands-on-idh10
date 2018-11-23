@@ -1,35 +1,37 @@
 package sample.web.ui.domain;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import lombok.Getter;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
+import java.util.HashMap;
+import java.util.Map;
 
+@Getter
 @Entity
 public class ProductCatalog {
     @Id
     @GeneratedValue
-    private long id;
+    private Long id;
 
     @OneToMany(cascade = CascadeType.ALL)
-    private List<Product> products;
+    private Map<Long, StockItem> products;
 
     public ProductCatalog() {
-        this.products = new ArrayList<>();
+        this.products = new HashMap<>();
     }
 
-    public boolean add(Product product) {
-        return this.products.add(product);
+    public void add(Product product, int quantity) {
+        assert (product.getId() != null);
+
+        products.put(product.getId(), new StockItem(product, quantity));
     }
 
-    public Optional<Product> find (long id) {
-        return this.products.stream()
-            .filter(product -> product.getId() == id)
-            .findFirst();
+    public Product decrementStock(Long productId) {
+        assert (products.containsKey(productId));
+        assert (products.get(productId).getQuantity() >= 0);
+
+        StockItem item = products.get(productId);
+        products.put(productId, item.decrementStock());
+        return item.getProduct();
     }
 }

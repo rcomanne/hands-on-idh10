@@ -1,13 +1,13 @@
 package sample.web.ui.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 @Entity
 @Getter
@@ -17,7 +17,7 @@ import lombok.ToString;
 public class Product {
     @Id
     @GeneratedValue
-    private long id;
+    private Long id;
 
     private String name;
 
