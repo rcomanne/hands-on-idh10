@@ -38,6 +38,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import lombok.extern.slf4j.Slf4j;
+import sample.web.ui.crosscutting.MyExecutionTime;
 import sample.web.ui.domain.Message;
 import sample.web.ui.domain.Order;
 import sample.web.ui.domain.OrderOption;
@@ -81,6 +82,7 @@ public class MessageController {
 		return productCatalogRepository.save(productCatalog);
 	}
 
+	@MyExecutionTime
 	private void decorateOrder() {
         Optional<Order> concreteOrder  = orderRepository.findById(4L);
         if (concreteOrder.isPresent()) {
@@ -111,6 +113,7 @@ public class MessageController {
         return order;
     }
 
+    @MyExecutionTime
 	@Transactional
 	@GetMapping(path = "/create-order")
 	public ResponseEntity<Order> createAndDecorateOrder() {
@@ -120,16 +123,19 @@ public class MessageController {
 		return new ResponseEntity<>(order, CREATED);
 	}
 
+    @MyExecutionTime
 	@GetMapping(path = "/orders")
     public ResponseEntity<List<Order>> getOrders() {
 	    return new ResponseEntity<>(orderRepository.findAll(), OK);
     }
 
+    @MyExecutionTime
     @GetMapping("/create-catalog")
     public ResponseEntity<ProductCatalog> createProductCatalog() {
         return new ResponseEntity<>(createProductCatalogAndProductsAndOrder(), OK);
     }
 
+    @MyExecutionTime
 	@GetMapping
 	@Transactional
 	public ModelAndView list() {
