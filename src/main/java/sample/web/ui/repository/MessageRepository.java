@@ -17,7 +17,6 @@
 package sample.web.ui.repository;
 
 import org.springframework.data.repository.CrudRepository;
-
 import sample.web.ui.domain.Message;
 
 public interface MessageRepository extends CrudRepository<Message, Long> {

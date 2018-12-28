@@ -1,16 +1,14 @@
 package sample.web.ui.domain;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import lombok.Getter;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity

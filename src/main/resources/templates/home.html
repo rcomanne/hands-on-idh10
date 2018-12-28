@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head>
+    <title>Spring Security Example</title>
+</head>
+<body>
+<h1>Welcome!</h1>
+
+<div sec:authorize="isAuthenticated()">
+    <p>Greetings: <span sec:authentication="name"></span></p>
+</div>
+
+<div sec:authorize="isAnonymous()">
+    <p>Greetings anonymous!</p>
+    <p>To use this service please <a th:href="@{/login}">login!</a></p>
+</div>
+
+<p>Click <a th:href="@{/hello}">here</a> to see a greeting.</p>
+</body>
+</html>

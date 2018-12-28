@@ -1,10 +1,10 @@
 package sample.web.ui.domain;
 
-import javax.persistence.Entity;
-
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.persistence.Entity;
 
 @Getter
 @ToString

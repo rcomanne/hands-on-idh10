@@ -1,6 +1,5 @@
 package sample.web.ui.service;
 
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sample.web.ui.domain.BaseOrder;
 import sample.web.ui.domain.Order;
