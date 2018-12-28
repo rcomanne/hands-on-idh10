@@ -26,10 +26,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import sample.web.ui.crosscutting.MyExecutionTime;
-import sample.web.ui.domain.*;
+import sample.web.ui.domain.BaseOrder;
+import sample.web.ui.domain.Message;
+import sample.web.ui.domain.Product;
+import sample.web.ui.domain.ProductCatalog;
 import sample.web.ui.repository.*;
+import sample.web.ui.service.*;
 
 import javax.validation.Valid;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -40,101 +45,50 @@ import static org.springframework.http.HttpStatus.OK;
 @Controller
 @RequestMapping("/")
 public class MessageController {
-
 	private static final String FORM_TEMPLATE = "messages/form";
 	private static final String LIST_TEMPLATE = "messages/list";
+
 	private final MessageRepository messageRepository;
-	private final BaseOrderRepository baseOrderRepository;
-	private final OrderOptionRepository orderOptionRepository;
-	private final ProductCatalogRepository productCatalogRepository;
-	private final ProductRepository productRepository;
+
+	private final IOrderService orderService;
+	private final IProductCatalogService productCatalogService;
+	private final IProductService productService;
 
 	@Autowired
-	public MessageController(final MessageRepository messageRepository, final BaseOrderRepository baseOrderRepository,
-							 final ProductCatalogRepository productCatalogRepository, final OrderOptionRepository orderOptionRepository,
-                             final ProductRepository productRepository) {
+	public MessageController(MessageRepository messageRepository, IOrderService orderService,
+							 IProductCatalogService productCatalogService, IProductService productService) {
 		this.messageRepository = messageRepository;
-		this.baseOrderRepository = baseOrderRepository;
-		this.orderOptionRepository = orderOptionRepository;
-		this.productCatalogRepository = productCatalogRepository;
-		this.productRepository = productRepository;
+		this.orderService = orderService;
+		this.productCatalogService = productCatalogService;
+		this.productService = productService;
 	}
-
-	private ProductCatalog createProductCatalogAndProductsAndOrder() {
-		ProductCatalog productCatalog = new ProductCatalog();
-		productCatalog = productCatalogRepository.save(productCatalog);
-		log.debug("{} products in product catalog.", productCatalog.getProducts().size());
-
-		Product schroefje = new Product("schroefje", 2);
-		productRepository.save(schroefje);
-
-		Product moertje = new Product("moertje", 1);
-		productRepository.save(moertje);
-
-		productCatalog.add(schroefje, 5);
-		productCatalog.add(moertje, 5);
-
-		try {
-            TimeUnit.SECONDS.sleep(10);
-        } catch (InterruptedException e) {
-		    log.debug("InterruptedException: {}", e.getMessage(), e);
-        }
-
-		return productCatalogRepository.save(productCatalog);
-	}
-
-/*
-	@MyExecutionTime
-	private void decorateOrder() {
-        Optional<Order> concreteOrder  = baseOrderRepository.findById(4L);
-        if (concreteOrder.isPresent()) {
-            OrderOption decoratedOrder1 = new OrderOption("wrapping paper", 7, concreteOrder.get());
-            orderOptionRepository.save(decoratedOrder1);
-            OrderOption decoratedOrder2 = new OrderOption("nice box", 5, decoratedOrder1);
-            orderOptionRepository.save(decoratedOrder2);
-            OrderOption decoratedOrder3 = new OrderOption("fast delivery", 12, decoratedOrder2);
-            orderOptionRepository.save(decoratedOrder3);
-            log.info("Content of the order: {}", decoratedOrder3);
-            log.info("Price of the order: {}", decoratedOrder3.price());
-        } else {
-            throw new RuntimeException("Order with id 4 not found.");
-        }
-    }
-*/
-	private void createOrder() {
-        ProductCatalog productCatalog = productCatalogRepository.findById(1L).orElseThrow(() -> new RuntimeException("ProductCatalog with id 1 not found"));
-
-        Product product = productCatalog.decrementStock(2L);
-
-        Product copy = new Product(product);
-
-        Order order = new Order();
-        order = baseOrderRepository.save(order);
-        order.add(copy);
-
-//        System.exit(0);
-    }
 
     @MyExecutionTime
 	@Transactional
 	@GetMapping(path = "/create-order")
 	public ResponseEntity createAndDecorateOrder() {
-        createOrder();
-//        decorateOrder();
-
-		return new ResponseEntity<>(CREATED);
+		return new ResponseEntity<>(orderService.createOrder(), CREATED);
 	}
 
     @MyExecutionTime
 	@GetMapping(path = "/orders")
     public ResponseEntity<List<BaseOrder>> getOrders() {
-	    return new ResponseEntity<>(baseOrderRepository.findAll(), OK);
+	    return new ResponseEntity<>(orderService.findAll(), OK);
     }
 
     @MyExecutionTime
+	@Transactional
     @GetMapping("/create-catalog")
     public ResponseEntity<ProductCatalog> createProductCatalog() {
-        return new ResponseEntity<>(createProductCatalogAndProductsAndOrder(), OK);
+//		create catalog
+    	ProductCatalog catalog = productCatalogService.createProductCatalog();
+//    	create products
+		Product schroefje = productService.createProduct("schroefje", 2);
+		Product moertje = productService.createProduct("moertje", 1);
+//		add products to catalog
+		productCatalogService.addProductsToCatalog(Arrays.asList(schroefje, moertje), 5, catalog);
+//		return catalog
+		return new ResponseEntity<>(catalog, OK);
     }
 
     @MyExecutionTime

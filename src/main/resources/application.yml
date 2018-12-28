@@ -3,7 +3,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
-#PROD
+    open-in-view: true
+  #PROD
 #  datasource:
 #    url: jdbc:mysql://localhost:3306/messagedb
 #    username: root
